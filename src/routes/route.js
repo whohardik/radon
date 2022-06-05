@@ -56,3 +56,99 @@ router.get('/hello', function (req, res) {
 });
 
 module.exports = router;
+
+
+
+
+constexpress = require('express');
+constrouter = express.Router();
+
+
+//Q 1
+router.get('/movies', function(req, res) {
+    let array1 = ['Rang de basanti', 'The shining', 'Lord of the rings', 'Batman begins']
+    
+    console.log(array1);
+    res.send(array1);
+ 
+})
+
+//Q 2
+router.get('/movies/:indexNumber', function(req, res){
+    let array2 = ['Rang de basanti', 'The shining', 'Lord of the rings', 'Batman begins']
+    leti = req.params.indexNumber
+    
+console.log(array2[i]);
+    res.send(array2[i]);
+ 
+})
+
+//Q 3
+router.get('/movie/:indexNumber', function(req, res){
+    let array3 = ['Rang de basanti', 'The shining', 'Lord of the rings', 'Batman begins']
+    leti = req.params.indexNumber
+
+    if(i<array3.length){
+        res.send(array3[i]);
+    }
+    else{
+        res.send("Invalid index!!!");
+    }
+})
+
+
+//Q 4
+router.get('/films', function(req, res){
+    let array4 = [ {
+        "id":1,
+        "name":"The Shining"
+       }, {
+        "id":2,
+        "name":"Incendies"
+       }, {
+        "id":3,
+        "name":"Rang de Basanti"
+       }, {
+        "id":4,
+        "name":"Finding Nemo"
+       }]
+
+       console.log(array4);
+       res.send(array4);
+})
+
+//Q 5
+router.get('/films/:filmId', function(req, res){
+    let array5 = [ {
+        "id":1,
+        "name":"The Shining"
+       }, {
+        "id":2,
+        "name":"Incendies"
+       }, {
+        "id":3,
+        "name":"Rang de Basanti"
+       }, {
+        "id":4,
+        "name":"Finding Nemo"
+       }]
+
+       letp = 0; 
+
+       for(leti=0; i<array5.length; i++){
+           if(req.params.filmId == array5[i].id){
+            res.send(array5[i]);
+            p = 1; 
+            break;
+           }
+       }
+       
+       if(p === 0 ){
+           res.send("No movie exists with this id");
+       }
+       
+})
+
+module.exports = router;
+
+
