@@ -7,7 +7,7 @@ const createUser = async function (abcd, xyz) {
   //the second parameter is always the response
   let data = abcd.body;
   let savedData = await userModel.create(data);
-  console.log(abcd.newAtribute);
+  //console.log(abcd.newAtribute);
   xyz.send({ msg: savedData });
 };
 
@@ -31,7 +31,7 @@ const loginUser = async function (req, res) {
   let token = jwt.sign(
     {
       userId: user._id.toString(),
-      batch: "thorium",
+      batch: "Radon",
       organisation: "FunctionUp",
     },
     "functionup-radon"
@@ -74,17 +74,32 @@ const updateUser = async function (req, res) {
 
   let userId = req.params.userId;
   let user = await userModel.findById(userId);
+  if(!userId)
+    return res.send({ msg: "Enter id" })
   //Return an error if no user with the given id exists in the db
   if (!user) {
     return res.send("No such user exists");
   }
-
   let userData = req.body;
-  let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, userData);
-  res.send({ status: updatedUser, data: updatedUser });
+  let updatedUser = await userModel.findOneAndUpdate({ _id: user._id }, userData );
+  res.send({ status: true, data: updatedUser });
 };
+  
+
+let deletUser= async function (req, res) {
+
+    let userId= req.params.userId;
+    let duser= await userModel.findOneAndUpdate({_id:userId},{$set:{isDeleted:true}},{new:true});
+   res.send({status: true,data:duser});
+    
+   
+
+}
+
+
 
 module.exports.createUser = createUser;
 module.exports.getUserData = getUserData;
 module.exports.updateUser = updateUser;
 module.exports.loginUser = loginUser;
+module.exports.deletUser = deletUser;
