@@ -3,9 +3,10 @@ const BookModel = require("../models/bookModel")
 
 
 const createBook = async function (req, res) {
-    try {
+    
         let data = req.body
         console.log(data)
+        try{
         if ( Object.keys(data).length != 0) {
             let savedData = await BookModel.create(data)
             res.status(201).send({ msg: savedData })
