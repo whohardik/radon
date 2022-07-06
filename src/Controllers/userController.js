@@ -1,5 +1,5 @@
 const userModel = require("../models/userModel")
-
+const jwt=require("jsonwebtoken")
 const validator = require("email-validator")
 
 //--------------------Handler For Creating user-----------------------------//
@@ -33,7 +33,7 @@ const createUser = async function (req, res){
                   msg : "Not a valid Mobile Number"  
               })
           }
-          let number =  await userModel.findOne({mobile : data.phone})
+          let number =  await userModel.findOne({phone : data.phone})
           if(number){
               return res.status(400).send({
                   status: false,
@@ -63,13 +63,13 @@ const createUser = async function (req, res){
 
 
         
-        if ((typeof(data.password) != "string") || !data.password.match(/?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{8,15})$/)) {
+        if ((typeof(data.password) != String) || data.password.match(!/^(\+\d{1,3}[- ]?)?\d{10}$/)) {
             return res.status(400).send({
                 status: false,
                 msg: "user paswword is  not in vaild format"
             })
         }
-        if ((typeof(data.address) != "string") || data.address.trim().length==0) {
+        if ( data.address.length===0) {
             return res.status(400).send({
                 status: false,
                 msg: "address is Missing or has invalid input"
@@ -91,4 +91,50 @@ const createUser = async function (req, res){
         })
     }
 }
+const validation = require("../validation.js");
+
+
+
+const loginUser = async function (req, res) {
+    let reqData = req.body;
+  
+    if (!validation.validateEmail(reqData.email)) {
+      return res.status(400).send({ status: false, msg: "Invalid email." });
+    }
+  
+    if (!validation.validateString(reqData.password)) {
+      return res.status(400).send({ status: false, msg: "Invalid password." });
+    }
+  
+    let userName = reqData.email;
+    let password = reqData.password;
+  
+    let user = await userModel.findOne({ email: userName, password: password });
+    
+    if (!user) {
+      return res.status(401).send({ status: false, msg: "Wrong Credentials." });
+    }
+  
+    let token = jwt.sign(
+      {
+        userId: user._id
+      },
+      "projectThree",{expiresIn :'2m'}
+    );
+  
+    res.status(200).send({ status: true, token: token });
+  };
+
+
+  module.exports.loginUser = loginUser;
+  
+
+
+
+
+
+
+
+
+
 module.exports.createUser =createUser

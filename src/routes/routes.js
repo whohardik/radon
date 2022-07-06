@@ -7,4 +7,9 @@ router.get("/test-me", function (req, res) {
     res.send("My first ever api!")
 })
 //---------------------Route For Creating Users-----------------------------------//
-router.post("/register", CollegeController.createCollege)
+router.post("/register", userController.createUser)
+
+router.post("/login", userController.loginUser)
+
+
+module.exports = router;
