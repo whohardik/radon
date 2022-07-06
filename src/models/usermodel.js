@@ -4,7 +4,7 @@ const userSchema=new mongoose.Schema(
   title:{
    type:String,
    require:true,
-   enum:[mr,mrs,miss] 
+   enum:["Mr","Mrs","Miss"] 
   },
   name:{
     type:String,
@@ -25,9 +25,9 @@ const userSchema=new mongoose.Schema(
     require:true
   },
   address:{
-street:{type:string},
-city:{type:string},
-pincodde:{type:string}
+street:{type:String},
+city:{type:String},
+pincode:{type:String}
 },
 },   
 {timestamps:true})

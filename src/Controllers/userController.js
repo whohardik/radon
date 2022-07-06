@@ -33,7 +33,7 @@ const createUser = async function (req, res){
                   msg : "Not a valid Mobile Number"  
               })
           }
-          let number =  await userModel.findOne({mobile : data.phone})
+          let number =  await userModel.findOne({phone : data.phone})
           if(number){
               return res.status(400).send({
                   status: false,
@@ -63,13 +63,14 @@ const createUser = async function (req, res){
 
 
         
-        if ((typeof(data.password) != "string") || !data.password.match(/?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{8,15})$/)) {
+        if ((typeof(data.password) != "string") || !data.password.match( /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,15}$/)) {
             return res.status(400).send({
                 status: false,
-                msg: "user paswword is  not in vaild format"
+                msg: "user paswword should contain min 8 ,max 15 characters and atleast one lowercase, one uppercase, one special character"
             })
         }
-        if ((typeof(data.address) != "string") || data.address.trim().length==0) {
+        console.log(typeof data.address)
+        if (typeof data.address !== "object"||Object.keys(data.address).length==0) {
             return res.status(400).send({
                 status: false,
                 msg: "address is Missing or has invalid input"
