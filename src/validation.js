@@ -23,7 +23,19 @@ const validateString = function validateString(value) {
   
     return false;
   };
-
+  const validateEnum = function validateEnum(value) {
+    if (!value) {
+      return false;
+    }
+  
+    var titleEnum = ["Mr", "Mrs", "Miss"];
+    if (titleEnum.includes(value)) {
+      return true;
+    }
+  
+    return false;
+  };
 
   module.exports.validateString = validateString;
   module.exports.validateEmail = validateEmail;
+  module.exports.validateEnum = validateEnum;
