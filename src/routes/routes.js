@@ -9,5 +9,7 @@ router.get("/test-me", function (req, res) {
 //---------------------Route For Creating Users-----------------------------------//
 router.post("/register", userController.createUser)
 
+router.post("/login", userController.loginUser)
 
-module.exports =  router
+
+module.exports = router;

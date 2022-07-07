@@ -1,5 +1,5 @@
 const userModel = require("../models/userModel")
-
+const jwt=require("jsonwebtoken")
 const validator = require("email-validator")
 
 //--------------------Handler For Creating user-----------------------------//
@@ -14,6 +14,7 @@ const createUser = async function (req, res){
             })
          }
          if ((typeof(data.title) != "string") || data.title.trim().length==0) {
+
             return res.status(400).send({
                 status: false,
                 msg: "title is Missing or has invalid input"
@@ -92,4 +93,51 @@ const createUser = async function (req, res){
         })
     }
 }
+const validation = require("../validation.js");
+
+
+
+const loginUser = async function (req, res) {
+    let reqData = req.body;
+  
+    if (!validation.validateEmail(reqData.email)) {
+      return res.status(400).send({ status: false, msg: "Invalid email." });
+    }
+  
+    if (!validation.validateString(reqData.password)) {
+      return res.status(400).send({ status: false, msg: "Invalid password." });
+    }
+  
+    let userName = reqData.email;
+    let password = reqData.password;
+  
+    let user = await userModel.findOne({ email: userName, password: password });
+    
+    if (!user) {
+      return res.status(401).send({ status: false, msg: "Wrong Credentials." });
+    }
+  
+    let token = jwt.sign(
+      {
+        userId: user._id
+      },
+      "projectThree",{expiresIn :Math.floor(Date.now()/1000)},
+      "This is the secret Key"
+    );
+    res.setHeader("x-api-key", token)
+    res.status(200).send({ status: true, token: token });
+  };
+
+
+  module.exports.loginUser = loginUser;
+  
+
+
+
+
+
+
+
+
+
 module.exports.createUser =createUser
