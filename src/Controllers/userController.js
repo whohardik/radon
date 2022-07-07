@@ -1,140 +1,234 @@
-const userModel = require("../models/userModel")
-const jwt=require("jsonwebtoken")
-const validator = require("email-validator")
+const userModel = require("../models/userModel");
+const jwt = require("jsonwebtoken");
+const {
+  isValid,
+  isValidName,
+  isValidPhone,
+  isValidEmail,
+  isValidPincode,
+  isValidPassword,
+  isValidReqBody,
+} = require("../validator/validation");
 
-//--------------------Handler For Creating user-----------------------------//
-const createUser = async function (req, res){
-    try{
-        let data = req.body
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        if(Object.keys(data).length == 0){
-            return res.status(400).send({
-             status: false,
-             msg : "Please provide the input"
-            })
-         }
-         if ((typeof(data.title) != "string") || data.title.trim().length==0) {
-            return res.status(400).send({
-                status: false,
-                msg: "title is Missing or has invalid input"
-            })
-        }
+const registerUser = async function (req, res) {
+  try {
+    // data sent through request body
+    let data = req.body;
 
-         if ((typeof(data.name) != "string") || !data.name.match(/^[a-zA-Z][a-zA-Z ]+[a-zA-Z]+$/)) {
-            return res.status(400).send({
-                status: false,
-                msg: "user Name is Missing or should contain only alphabets"
-            })
-        }
-        
-        if((typeof(data.phone) != "string") || !data.phone.match(/^[6-9]\d{9}$/)){
-            return  res.status(400).send({
-                  status : false,
-                  msg : "Not a valid Mobile Number"  
-              })
-          }
-          let number =  await userModel.findOne({phone : data.phone})
-          if(number){
-              return res.status(400).send({
-                  status: false,
-                  msg: "Number already Registred"
-              }) 
-          }
-        if ((typeof(data.email) != "string") || data.email.trim().length==0) {
-            return res.status(400).send({
-                status: false,
-                msg: "Email is Missing or has invalid input"
-            })
-        }
-        if (!validator.validate(data.email)) {
-            return res.status(400).send({
-                status: false,
-                msg: "Email-Id is invalid"
-            })
-        }
-        //Checks For Unique Email Id
-        let checkEmail = await userModel.findOne({ email: data.email , isDeleted : false})
-        if (checkEmail) {
-            return res.status(400).send({
-                status: false,
-                msg: "Email Id already Registred"
-            })
-        }
-
-
-        
-        if ((typeof(data.password) != String) || data.password.match(!/^(\+\d{1,3}[- ]?)?\d{10}$/)) {
-            return res.status(400).send({
-                status: false,
-                msg: "user paswword is  not in vaild format"
-            })
-        }
-        if ( data.address.length===0) {
-            return res.status(400).send({
-                status: false,
-                msg: "address is Missing or has invalid input"
-            })
-        }
-      
-        let savedData = await userModel.create(data)
-        res.status(201).send({
-            status : true,
-            data : savedData
-        })
-
+    // if request body is empty
+    if (!isValidReqBody(data)) {
+      return res
+        .status(400)
+        .send({ status: false, message: " Please enter user details" });
     }
-    catch(err){
-        console.log("Error is From Creating user :", err.message)
-        res.status(500).send({
-            status : false,
-            msg : err.message
-        })
+
+    let title = data.title;
+    let name = data.name;
+    let phone = data.phone;
+    let email = data.email?.toLowerCase();
+    let password = data.password;
+    let street = data.address?.street;
+    let city = data.address?.city;
+    let pincode = data.address?.pincode;
+
+    // VALIDATIONS:
+
+    // if title is empty
+    if (isValid(title) === false) {
+      return res.status(400).send({
+        status: false,
+        message: " Please enter title(required field)",
+      });
     }
-}
-const validation = require("../validation.js");
+    // if title is invalid
+    // AMBIGUITY: avoid shifting to validator; TITLE is also used for book's title
+    let enumArr = ["Mr", "Mrs", "Miss"];
+    if (!enumArr.includes(title)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please enter valid title" });
+    }
 
+    // if phone is empty
+    if (isValid(name) === false) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please enter name(required field) " });
+    }
+    // name validation
+    if (!isValidName(name)) {
+      return res
+        .status(400)
+        .send({ status: false, msg: "plesae give a valid name" });
+    }
 
+    // if phone is empty
+    if (isValid(phone) === false)
+      return res.status(400).send({
+        status: false,
+        message: "Please enter the phone number(required field)",
+      });
+    // if phone is invalid
+    if (isValidPhone(phone) === false)
+      return res.status(400).send({
+        status: false,
+        message: `${phone} is not a valid phone number; Please provide a valid phone number`,
+      });
+    // phone duplication check
+    let phoneCheck = await userModel.findOne({
+      phone: phone,
+    });
+    if (phoneCheck)
+      return res
+        .status(400)
+        .send({ status: false, message: "Phone number is already used!" });
+
+    // if email is empty
+    if (isValid(email) === false) {
+      return res.status(400).send({
+        status: false,
+        message: " Please Enter email(required field)",
+      });
+    }
+    // if email is invalid
+    if (isValidEmail(email) === false) {
+      return res
+        .status(400)
+        .send({ status: false, message: " Please enter valid email" });
+    }
+    // email duplication check
+    let emaildb = await userModel.findOne(
+      { email: email },
+      { email: 1, _id: 0 }
+    );
+    if (emaildb) {
+      return res.status(400).send({
+        status: false,
+        message: "We are sorry; this email is already used",
+      });
+    }
+
+    // is password is empty
+    if (isValid(password) === false) {
+      return res.status(400).send({
+        status: false,
+        message: " Please enter password(required field)",
+      });
+    }
+
+    // if password is invalid
+    if (isValidPassword(password) === false) {
+      let length = "";
+      if (password.length < 8) length = "less than 8 characters";
+      else if (password.length > 15) length = "greater than 15 characters";
+      return res.status(400).send({
+        status: false,
+        message: `password cannot be ${length}`,
+      });
+    }
+
+    if (data.address) {
+      // if street only has whitespace characters
+      if (!street?.trim()) {
+        return res
+          .status(400)
+          .send({ status: false, message: "street is invalid" });
+      }
+      // if city only has whitespace characters
+      if (!city?.trim()) {
+        return res
+          .status(400)
+          .send({ status: false, message: "city is invalid" });
+      }
+      // pincode validation
+      if (isValidPincode(pincode) === false) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please enter valid pincode" });
+      }
+    }
+
+    // registering user
+    let registeredUser = await userModel.create(data);
+
+    // response
+    res.status(201).send({ status: true, message: registeredUser });
+  } catch (err) {
+    res.status(500).send({
+      status: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+};
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const loginUser = async function (req, res) {
-    let reqData = req.body;
-  
-    if (!validation.validateEmail(reqData.email)) {
-      return res.status(400).send({ status: false, msg: "Invalid email." });
+  try {
+    // login credentials sent through request body
+    let email = req.body.email;
+    let password = req.body.password;
+
+    // if email is empty
+    if (isValid(email) === false) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter email!",
+      });
     }
-  
-    if (!validation.validateString(reqData.password)) {
-      return res.status(400).send({ status: false, msg: "Invalid password." });
+
+    // if password is empty
+    if (isValid(password) === false) {
+      return res.status(400).send({
+        status: false,
+        message: "Please enter password!",
+      });
     }
-  
-    let userName = reqData.email;
-    let password = reqData.password;
-  
-    let user = await userModel.findOne({ email: userName, password: password });
-    
-    if (!user) {
-      return res.status(401).send({ status: false, msg: "Wrong Credentials." });
-    }
-  
+
+    // user document satisfying the login credentials
+    let loginCredentials = await userModel.findOne({
+      email: email,
+      password: password,
+    });
+
+    // if login credentials are not correct
+    if (!loginCredentials)
+      return res.status(400).send({
+        status: false,
+        error: "email or password is incorrect",
+      });
+
+    // JWT generation using sign function
     let token = jwt.sign(
       {
-        userId: user._id
+        email: loginCredentials.email.toString(),
+        userId: loginCredentials._id,
       },
-      "projectThree",{expiresIn :'2m'}
+      "Group14",
+      {
+        expiresIn: "24h",
+      }
     );
-  
-    res.status(200).send({ status: true, token: token });
-  };
 
+    // JWT generated sent back in response header
+    res.setHeader("x-api-key", token);
 
-  module.exports.loginUser = loginUser;
-  
+    res.status(200).send({
+      status: true,
+      message: "Login Successfull! Token sent in header 'x-api-key'",
+    });
+  } catch (err) {
+    res.status(500).send({
+      status: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+};
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-module.exports.createUser =createUser
+module.exports = { registerUser, loginUser };
