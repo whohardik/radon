@@ -15,6 +15,10 @@ const isValid = function (value) {
   if (typeof value === "string") return true;
 };
 
+
+
+
+
 // subcategory validation (required: true)
 // const isValidSubcategory = function (value) {
 //   if (typeof value === "undefined" || typeof value === null) return false;

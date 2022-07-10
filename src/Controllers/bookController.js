@@ -186,20 +186,40 @@ const createBook = async function (req, res) {
 };
 
 
-const getBooks = async function(req,res)
-{
-    try {
-         let query = req.query 
-   let {userId,category,subcategory} = query
+const getBooks = async function(req,res){
+ try {
+         const query = {isDeleted:false,deletedAt:null}
+   
+        const getQuery = req.query;
+        if (!isValidReqBody(req.query)) {
+            return res
+              .status(400)
+              .send({ status: false, message: "Please provide the key" });
+          }
+         
+          if (!isValid(req.query)) {
+              return res
+                .status(400)
+                .send({ status: false, message: "Please provide the key value" });
+            }
 
-const data = req.body
-if(data.isDeleted==false){
-const newdata = await bookModel.find(query).select({book_id:1,title:1, excerpt: 1,userId:1,category:1,releasedAt:1,}).sort({ title: 1 })
-if(newdata.length==0) return res.status(404).send({status : false, msg : "No data found"})
-console.log(newdata)
-res.status(200).send({status : true, data : newdata})
-}
-}
+
+
+
+  const {userId,category,subcategory}
+        = getQuery;
+        if(!getQuery)  return res
+                      .status(400)
+                      .send({status : false, msg : "please enter the required key"})
+
+ const getBook = await bookModel.find(query).select({book_id:1,title:1, excerpt: 1,userId:1,category:1,releasedAt:1,}).sort({ title: 1 })
+if(getBook.length==0) return res.status(404).send({status : false, msg : "No data found"})
+console.log(getBook)
+res.status(200).send({status : true, data : getBook})
+        
+        }
+        
+    
 catch(error){
     res.status(500).send({
         status: false,
@@ -208,5 +228,6 @@ catch(error){
       });
 }
 }
+
 module.exports.createBook=createBook;
 module.exports.getBooks=getBooks;
