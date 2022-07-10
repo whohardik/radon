@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require("../Controllers/userController")
 const bookController = require("../controllers/bookController");
+const reviewController = require("../controllers/reviewController");
 const middleware = require("../middlewares/middleware");
 
 router.get("/test-me", function (req, res) {
@@ -31,5 +32,22 @@ router.put("/books/:bookId", middleware.authentication, middleware.authorisation
 
 //Api for deleting books by bookId in path params
 router.delete("/books/:bookId",middleware.authentication,middleware.authorisation,bookController.deleteBook);
+
+//Api for posting review  by bookId in path params
+router.post("/books/:bookId/review", reviewController.createReview);
+
+//Api for updating review  by bookId and review id in path params
+router.put("/books/:bookId/review/:reviewId", reviewController.reviewUpdate);
+
+//Api for deleting review  by bookId and review id in path params
+router.delete("/books/:bookId/review/:reviewId", reviewController.deleteReview);
+
+
+// if api is invalid OR wrong URL
+router.all("/*", function (req, res) {
+  res
+    .status(404)
+    .send({ status: false, msg: "The api you requested is not available" });
+});
 
 module.exports = router;
