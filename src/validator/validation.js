@@ -20,11 +20,11 @@ const isValid = function (value) {
 
 
 // subcategory validation (required: true)
-// const isValidSubcategory = function (value) {
-//   if (typeof value === "undefined" || typeof value === null) return false;
-//   if (typeof value === "string" && value.trim().length == 0) return false;
-//   if (typeof value == "object" && Array.isArray(value) == true) return true;
-// };
+const isValidSubcategory = function (value) {
+  if (typeof value === "undefined" || typeof value === null) return false;
+  if (typeof value === "string" && value.trim().length == 0) return false;
+  if (typeof value == "object" && Array.isArray(value) == true) return true;
+};
 
 // email validation
 const isValidEmail = function (email) {
@@ -89,7 +89,7 @@ const isValidRating = function (value) {
 module.exports = {
   isValidReqBody,
   isValid,
-//   isValidSubcategory,
+  isValidSubcategory,
   isValidEmail,
   isValidPhone,
   isValidPincode,
