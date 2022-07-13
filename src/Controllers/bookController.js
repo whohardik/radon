@@ -186,48 +186,78 @@ const createBook = async function (req, res) {
 };
 
 
-const getBooks = async function(req,res){
- try {
+ const getBooks = async function(req,res){
+  try {
          const query = {isDeleted:false,deletedAt:null}
    
-        const getQuery = req.query;
-        if (!isValidReqBody(req.query)) {
-            return res
-              .status(400)
-              .send({ status: false, message: "Please provide the key" });
-          }
-         
-        //  if (!isValid(req.query)) {
-          //    return res
-            //    .status(400)
-              //  .send({ status: false, message: "Please provide the key value" });
-            //}
-
-
-
-
-  const {userId,category,subcategory}
+         const getQuery = req.query;
+       
+         const {userId,category,subcategory,...rest}
         = getQuery;
-        if(!getQuery)  return res
-                      .status(400)
-                      .send({status : false, msg : "please enter the required key"})
+        if (Object.keys(rest).length>0)
+        res.status(400).send({status:false,message: "Please enter the required field"})
 
- const getBook = await bookModel.find(query).select({book_id:1,title:1, excerpt: 1,userId:1,category:1,releasedAt:1,}).sort({ title: 1 })
-if(getBook.length==0) return res.status(404).send({status : false, msg : "No data found"})
-console.log(getBook)
-res.status(200).send({status : true, data : getBook})
-        
+if (isValid(category)) {
+          query.category = category.trim();
         }
+  
+     if(isValid(subcategory)){
+           query.subcategory = subcategory.trim();
+             } 
+
+        if (isValid(userId) && isValidObjectId(userId)){
+          
+             query.userId = userId.trim();
+                 } 
+
+
+  const getBook = await bookModel.find(query).select({book_id:1,title:1, excerpt: 1,userId:1,category:1,releasedAt:1,}).sort({title:1})
+getBook.sort((a,b)=>a.title.localeCompare(b.title))
+if(getBook.length==0) return res.status(404).send({status : false, msg : "No data found"})
+ 
+
+
+
+ console.log(getBook)
+ res.status(200).send({status : true, data : getBook})
+        
+         }
+
+
+
+
+
+
         
     
-catch(error){
-    res.status(500).send({
-        status: false,
+ catch(error){
+     res.status(500).send({
+         status: false,
         message: "Internal Server Error",
-        error: error.message,
-      });
+         error: error.message,
+     });
+ }
 }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //===========*==================*===============[GET BOOK BY ID]===============*===============*=============*
 let getBooksById= async(req,res)=>{
@@ -244,9 +274,9 @@ let getBooksById= async(req,res)=>{
         }
         //-------------Check  Reviews----------
         let reviewsData=await reviewModel.find({_id:bookId,isDeleted:false})
-        let {_id,titel,category,subcategory,excerpt,reviews,updateedAt,createdAt,releasedAt,isDeleted}=checkBook
+        let {_id,title,category,subcategory,excerpt,reviews,updateedAt,createdAt,releasedAt,isDeleted}=checkBook
         //------------Send Response------------
-        let data ={_id,titel,category,subcategory,excerpt,reviews,updateedAt,createdAt,releasedAt,isDeleted,reviewsData}
+        let data ={_id,title,category,subcategory,excerpt,reviews,updateedAt,createdAt,releasedAt,isDeleted,reviewsData}
         return res.status(200).send({status:true,message:'Book list',data:data})
     } catch (error) {
         return res.status(500).send({status:false,message:error.message})
@@ -345,8 +375,8 @@ const updateBook = async function (req, res) {
     } catch (err) {
       res.status(500).send({ status: false, message: err.message });
     }
-  };
-
+}
+  
   //============Delete a book================
   // bookId VALIDATION (handled by middleware)
       // CASES:

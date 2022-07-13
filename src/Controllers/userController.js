@@ -44,7 +44,7 @@ const registerUser = async function (req, res) {
     }
     // if title is invalid
     // AMBIGUITY: avoid shifting to validator; TITLE is also used for book's title
-    let enumArr = ["mr", "mrs", "miss"];
+    let enumArr = ["Mr", "Mrs", "Miss"];
     if (!enumArr.includes(title)) {
       return res
         .status(400)
